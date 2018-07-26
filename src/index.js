@@ -1,8 +1,11 @@
 const bindings = require('./bindings')
 
+// Initializes the networking mutexes when the library is built with thread safety.
+// This function must always be called before any other libshout function.
+bindings.shout_init()
+
 class Libshout {
 	constructor() {
-		bindings.shout_init()
 		this.pointer = bindings.shout_new()
 	}
 
@@ -12,7 +15,7 @@ class Libshout {
 
 	static shutdown() {
 		console.log('shutdown')
-		// bindings.shout_shutdown()
+		bindings.shout_shutdown()
 	}
 
 	shutdown() {
@@ -28,5 +31,5 @@ class Libshout {
 
 const instance = new Libshout()
 
-
+console.log(Libshout.version())
 module.exports = Libshout

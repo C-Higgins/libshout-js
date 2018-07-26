@@ -2,7 +2,7 @@
   "name": "libshout-js",
   "version": "0.0.1",
   "description": "Native Node.js bindings for the libshout library",
-  "main": "index.js",
+  "main": "src/index.js",
   "repository": "https://github.com/C-Higgins/libshout-js",
   "author": "Chris Higgins <ChrisHiggins2012@gmail.com>",
   "license": "GPL-3.0",
