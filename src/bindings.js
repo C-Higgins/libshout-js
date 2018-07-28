@@ -7,10 +7,13 @@ const shout_metadata = ref.types.void
 const shout_tP = ptr(shout_t)
 const shout_metadataP = ptr(shout_metadata)
 
-module.exports = new ffi.Library('/usr/local/lib/libshout', {
+module.exports = (path = 'libshout') => new ffi.Library(path, {
 	// functionSymbol: [ returnType, [ arg1Type, arg2Type, ... ], ... ]
 
 	/* ----- Global functions ------ */
+
+	// Initializes the networking mutexes when the library is built with thread safety.
+	// This function must always be called before any other libshout function.
 	shout_init: ['void', []],
 	shout_shutdown: ['void', []],
 	shout_version: ['CString', [ptr('int32'), ptr('int32'), ptr('int32')]],

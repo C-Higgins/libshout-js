@@ -1,10 +1,11 @@
 /* eslint-disable no-param-reassign */
-const c = require('./bindings')
-const {ERRORS, PROTOCOLS, FORMATS, AUDIOINFO, META, TLS} = require('./constants')
+const cInitializer = require('./bindings')
+const Writable = require('stream').Writable
+const {
+	ERRORS, PROTOCOLS, FORMATS, AUDIOINFO, META, TLS,
+} = require('./constants')
+let c = null
 
-// Initializes the networking mutexes when the library is built with thread safety.
-// This function must always be called before any other libshout function.
-c.shout_init()
 
 class Metadata {
 	constructor() {
@@ -15,17 +16,24 @@ class Metadata {
 		c.shout_metadata_free(this.pointer)
 	}
 
-	add(name, value) {
-		if (name.includes('_')) {
-			name = META[name]
-		}
-		return handleErrors(c.shout_metadata_add(this.pointer, name, value))
+	add(keyOrObject, value) {
+		return setSingleOrMulti(this.pointer, keyOrObject, value, c.shout_metadata_add)
 	}
 }
 
 class Libshout {
-	constructor() {
+	constructor(filepath) {
+		c = cInitializer(filepath)
+		c.shout_init()
 		this.pointer = c.shout_new()
+		const ls = this
+		this.writeStream = new Writable({
+			write(data, encoding, cb) {
+				ls.send(data, data.length)
+				const delay = Math.abs(ls.getDelay())
+				setTimeout(() => cb(), delay)
+			},
+		})
 	}
 
 	static get version() {
@@ -50,7 +58,7 @@ class Libshout {
 	}
 
 	getConnected() {
-		return handleErrors(c.shout_get_connected(this.pointer))
+		return ERRORS[(c.shout_get_connected(this.pointer))]
 	}
 
 	getError() {
@@ -234,7 +242,7 @@ class Libshout {
 
 	// Audio constants
 	setAudioInfo(name, value) {
-		return handleErrors(c.shout_set_audio_info(this.pointer, name, value))
+		setSingleOrMulti(this.pointer, name, value, c.shout_set_audio_info)
 	}
 
 	getAudioInfo(name) {
@@ -249,7 +257,6 @@ class Libshout {
 	setMetadata(metadata) {
 		return handleErrors(c.shout_set_metadata(this.pointer, metadata.pointer))
 	}
-
 }
 
 function handleErrors(code) {
@@ -259,22 +266,23 @@ function handleErrors(code) {
 	return code
 }
 
-const shout = new Libshout()
-shout.setHost('localhost')
-shout.setPort(8000)
-shout.setUser('source')
-shout.setPassword('pass')
-shout.setMount('deneme')
-shout.setFormat(1) // 0=ogg, 1=mp3
-shout.setAudioInfo('bitrate', '192')
-shout.setAudioInfo('samplerate', '44100')
-shout.setAudioInfo('channels', '2')
-shout.open()
-const meta = Libshout.createMetadata()
-meta.add('name', 'song')
-shout.setMetadata(meta)
-// instance.host = 'hosttest'
-// console.log(instance.host)
+function setSingleOrMulti(pointer, keyOrObject, value, func) {
+	if (typeof keyOrObject === 'string') {
+		return handleErrors(func(pointer, keyOrObject, value))
+	} else {
+		Object.entries(keyOrObject).forEach(kv => {
+			handleErrors(func(pointer, kv[0], kv[1]))
+		})
+	}
+	return ERRORS[0]
+}
 
-console.log(Libshout.version)
+Libshout.CONST = {
+	PROTOCOLS,
+	FORMATS,
+	META,
+	AUDIOINFO,
+	ERRORS,
+}
+
 module.exports = Libshout
