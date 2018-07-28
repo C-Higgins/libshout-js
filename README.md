@@ -19,11 +19,12 @@ Install nodeshout with yarn or npm:
     yarn install libshout-js
 
 Use as follows:
-
+```js
     // Import
     const Libshout = require('libshout-js')
 
-    // Create the instance. Specify path to the .so/.dll/.dylib file. If no path is set, it will attempt to load the standard dll locations.
+    // Create the instance. Specify path to the .so/.dll/.dylib file. 
+    // If no path is set, it will attempt to load the standard dll locations.
     const ls = new Libshout('path/to/libshout.so')
 
     // Configure the connection
@@ -45,23 +46,25 @@ Use as follows:
         samplerate: '44100',
         channels: '2',
     })
-
+```
 Open the connection.
-
+```js
     try {
         ls.open()
     } catch (err) {
         console.warn(err)
     }
+```
 
 If connection is successful, `.open()` will return string `SHOUT_ERR_SUCCESS`, otherwise it will throw an error. After successful connection, you can pipe audio data through the provided `writeStream` stream, or manually send data.
-
+```js
     const fileStream = new fs.createReadStream('song.mp3')
     fileStream.pipe(ls.writeStream)
-    shout.writeStream.on('finish', () => console.log('Song finished'))
+    ls.writeStream.on('finish', () => console.log('Song finished'))
 
     // or,
     ls.send(buffer, bufferLen)
+```
 
 If sending data manually, there are two ways to synchronize it.
 `.sync()` will block the thread until ready.
@@ -69,7 +72,7 @@ If sending data manually, there are two ways to synchronize it.
 
 Metadata
 -------------
-```
+```js
 // Create a metadata instance
 const metadata = Libshout.createMetadata()
 
