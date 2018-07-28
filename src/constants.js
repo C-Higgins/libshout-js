@@ -117,6 +117,7 @@ const _audioInfo = {
 	SHOUT_AI_QUALITY: 'quality',
 }
 
+// Other meta headers can be set, but these seem to the the "standard" ones.
 const _meta = {
 	SHOUT_META_NAME: 'name',
 	SHOUT_META_URL: 'url',

@@ -30,7 +30,7 @@ class Libshout {
 		this.writeStream = new Writable({
 			write(data, encoding, cb) {
 				ls.send(data, data.length)
-				const delay = Math.abs(ls.getDelay())
+				const delay = ls.getDelay()
 				setTimeout(() => cb(), delay)
 			},
 		})
@@ -96,7 +96,7 @@ class Libshout {
 	}
 
 	getNonblocking() {
-		return c.shout_get_nonblocking()
+		return c.shout_get_nonblocking(this.pointer)
 	}
 
 	setHost(host) {
@@ -160,7 +160,7 @@ class Libshout {
 	}
 
 	getMount() {
-		return c.shout_get_mount()
+		return c.shout_get_mount(this.pointer)
 	}
 
 	setDumpfile(dumpfile) {
@@ -200,7 +200,7 @@ class Libshout {
 	}
 
 	setCaFile(file) {
-		return handleErrors(c.shout_set_ca_file(this.pointer))
+		return handleErrors(c.shout_set_ca_file(this.pointer, file))
 	}
 
 	getCaFile() {
@@ -232,6 +232,9 @@ class Libshout {
 		return !!c.shout_get_public(this.pointer)
 	}
 
+	// Metadata for the STREAM, not for the track.
+	// These get sent as headers prefaced with "icy-", and can be any string, not just those
+	// defined in META.
 	setMeta(name, value) {
 		return handleErrors(c.shout_set_meta(this.pointer, name, value))
 	}
@@ -254,6 +257,7 @@ class Libshout {
 		return new Metadata()
 	}
 
+	// Metadata for the TRACK, not for the stream
 	setMetadata(metadata) {
 		return handleErrors(c.shout_set_metadata(this.pointer, metadata.pointer))
 	}

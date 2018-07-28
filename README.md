@@ -1,6 +1,6 @@
 libshout-js
 ===================
-Native Node.js Libshout 2 bindings.
+Native Node.js Libshout bindings for libshout 2.4.1 (latest).
 
 >Libshout is a C library for streaming audio to icecast or shoutcast-compatible servers. It supports four audio formats and four protocols. It handles the networking and communication to the server, allowing users to focus on programmatic control.
 
@@ -34,6 +34,9 @@ Use as follows:
     ls.setUser('user')
     ls.setPassword('pass')
     ls.setMount('mountpoint')
+
+    // Set stream metadata
+    ls.setMeta('description', 'A lovely stream')
 
     // Some constants are defined for you.
     ls.setFormat(Libshout.CONST.FORMATS.SHOUT_FORMAT_MP3)
@@ -72,12 +75,13 @@ If sending data manually, there are two ways to synchronize it.
 
 Metadata
 -------------
+Icecast only supports track metadata for MP3 streams. Vorbis streams are expected to embed metadata as vorbis comments in the audio stream.
 ```js
 // Create a metadata instance
 const metadata = Libshout.createMetadata()
 
 // Set the metadata within the object. Supported values are defined in constants.
-metadata.add('song', 'A Love Supreme Pt. I – Acknowledgement')
+metadata.add('title', 'A Love Supreme Pt. I – Acknowledgement')
 
 // Then, you must apply the metadata to the server connection object.
 ls.setMetadata(metadata);
