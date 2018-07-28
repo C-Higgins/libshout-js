@@ -1,6 +1,6 @@
 {
   "name": "libshout-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Native Node.js bindings for the libshout library",
   "main": "src/libshout.js",
   "repository": "https://github.com/C-Higgins/libshout-js",
