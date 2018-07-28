@@ -1,25 +1,67 @@
-/* eslint-disable no-inline-comments */
 const _errors = {
 	SHOUTERR_SUCCESS: 0,
-	SHOUTERR_INSANE: -1, /* Nonsensical arguments e.g. self being NULL */
-	SHOUTERR_NOCONNECT: -2, /* Couldn't connect */
-	SHOUTERR_NOLOGIN: -3, /* Login failed */
-	SHOUTERR_SOCKET: -4, /* Socket error */
-	SHOUTERR_MALLOC: -5, /* Out of memory */
+
+	// Indicates bad parameters, either nonsense or not applicable due to the current
+	// state of the connection.
+	SHOUTERR_INSANE: -1,
+
+	// Indicates a connection with the server could not be established.
+	SHOUTERR_NOCONNECT: -2,
+
+	// Indicates the server refused to accept a login attempt. This could be caused
+	// by a bad user name or password.
+	SHOUTERR_NOLOGIN: -3,
+
+	// Indicates an error sending or receiving data.
+	SHOUTERR_SOCKET: -4,
+
+	// Indicates the function could not allocate the memory it required.
+	SHOUTERR_MALLOC: -5,
+
+	// Indicates an error updating metadata on the server.
 	SHOUTERR_METADATA: -6,
-	SHOUTERR_CONNECTED: -7, /* Cannot set parameter while connected */
-	SHOUTERR_UNCONNECTED: -8, /* Not connected */
-	SHOUTERR_UNSUPPORTED: -9, /* This libshout doesn't support the requested option */
-	SHOUTERR_BUSY: -10, /* Socket is busy */
-	SHOUTERR_NOTLS: -11, /* TLS requested but not supported by peer */
-	SHOUTERR_TLSBADCERT: -12, /* TLS connection can not be established because of bad certificate */
-	SHOUTERR_RETRY: -13, /* Retry last operation. */
+
+	// Indicates that, while connected, you attempted to call a function which only makes
+	// sense before connection (eg you attempted to set the user name or stream name).
+	SHOUTERR_CONNECTED: -7,
+
+	// Indicates that you attempted to use a function that requires an open connection
+	// (for example, shout_send) while you were not connected.
+	SHOUTERR_UNCONNECTED: -8,
+
+	// Indicates that you attempted to use a function which is unsupported in the
+	// state of your connection. For example, attempting to set metadata while using the
+	// Ogg Vorbis format is unsupported.
+	SHOUTERR_UNSUPPORTED: -9,
+
+	// Indicates that the socket is busy. The funtion returning this should be
+	// called again later. This is likely to happen in non-blocking mode but may also happen
+	// in blocking mode.
+	SHOUTERR_BUSY: -10,
+
+	// TLS (Transport Layer Security) was requested via shout_set_tls but is not supported by the server.
+	SHOUTERR_NOTLS: -11,
+
+	// A TLS (Transport Layer Security) connection has been established but the server
+	// returned a certificate which failed the check. The certificate may be invalid or
+	// is not signed by a trusted CA. See shout_set_tls.
+	SHOUTERR_TLSBADCERT: -12,
+
+	// The caller should retry this call later.
+	SHOUTERR_RETRY: -13,
 }
 
 const _protocols = {
+	// The HTTP protocol. This is the native protocol of the Icecast 2 server, and is the default.
 	SHOUT_PROTOCOL_HTTP: 0,
+
+	// The Audiocast format. This is the native protocol of Icecast 1.
 	SHOUT_PROTOCOL_XAUDIOCAST: 1,
+
+	// The ShoutCast format. This is the native protocol of ShoutCast.
 	SHOUT_PROTOCOL_ICY: 2,
+
+	// The RoarAudio protocol. This is the native protocol for RoarAudio.
 	SHOUT_PROTOCOL_ROARAUDIO: 3,
 }
 
@@ -59,6 +101,39 @@ const _tls = {
 	// In this mode libshout will use HTTP/1.1's Upgrade:-process to switch to TLS.
 	// This allows to use TLS on a non-TLS socket of the server.
 	SHOUT_TLS_RFC2817: (12),
+}
+
+const _audioInfo = {
+	// Used to specify the nominal bitrate of the stream.
+	SHOUT_AI_BITRATE: 'bitrate',
+
+	// Used to specify the samplerate of the stream.
+	SHOUT_AI_SAMPLERATE: 'samplerate',
+
+	// Used to specify the number of channels (usually one or two).
+	SHOUT_AI_CHANNELS: 'channels',
+
+	// Used to specify the Ogg Vorbis encoding quality of the stream.
+	SHOUT_AI_QUALITY: 'quality',
+}
+
+const _meta = {
+	SHOUT_META_NAME: 'name',
+	SHOUT_META_URL: 'url',
+	SHOUT_META_GENRE: 'genre',
+	SHOUT_META_DESCRIPTION: 'description',
+	SHOUT_META_IRC: 'irc',
+	SHOUT_META_AIM: 'aim',
+	SHOUT_META_ICQ: 'icq',
+}
+
+module.exports = {
+	ERRORS: enumerate(_errors),
+	PROTOCOLS: enumerate(_protocols),
+	FORMATS: enumerate(_formats),
+	TLS: enumerate(_tls),
+	AUDIOINFO: enumerate(_audioInfo),
+	META: enumerate(_meta),
 }
 
 function enumerate(mappings) {

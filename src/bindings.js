@@ -3,9 +3,11 @@ const ffi = require('ffi-napi')
 const ref = require('ref')
 
 const shout_t = ref.types.void
+const shout_metadata = ref.types.void
 const shout_tP = ptr(shout_t)
+const shout_metadataP = ptr(shout_metadata)
 
-module.exports = new ffi.Library('/usr/lib64/libshout.so.3.2.0', {
+module.exports = new ffi.Library('/usr/local/lib/libshout', {
 	// functionSymbol: [ returnType, [ arg1Type, arg2Type, ... ], ... ]
 
 	/* ----- Global functions ------ */
@@ -37,13 +39,13 @@ module.exports = new ffi.Library('/usr/lib64/libshout.so.3.2.0', {
 	shout_get_error: ['CString', [shout_tP]],
 
 	// Returns the shout error code of the last error that occured in this connection.
-	shout_get_errorno: ['int32', [shout_tP]],
+	shout_get_errno: ['int32', [shout_tP]],
 
 
 	/* ----- Sending Data ----- */
 
 	// Sends [3rd] bytes of audio data from the buffer pointed to by [2nd] to the server.
-	// The connction must already have been established by a successful call to shout_open.
+	// The connection must already have been established by a successful call to shout_open.
 	shout_send: ['int32', [shout_tP, ptr('uchar'), 'int32']],
 
 	// Sends [3rd] bytes of audio data from the buffer pointed to by [2nd] to the server.
@@ -113,7 +115,7 @@ module.exports = new ffi.Library('/usr/lib64/libshout.so.3.2.0', {
 	shout_get_mount: ['CString', [shout_tP]],
 
 	// If the server supports it, you can request that your stream be archived
-	// on the server under the name <varname>dumpfile</varname>. This can quickly
+	// on the server under the name [2]. This can quickly
 	// eat a lot of disk space, so think twice before setting it.
 	shout_set_dumpfile: ['int32', [shout_tP, 'CString']],
 	shout_get_dumpfile: ['CString', [shout_tP]],
@@ -130,6 +132,79 @@ module.exports = new ffi.Library('/usr/lib64/libshout.so.3.2.0', {
 	// kind of attack and downgrade the connection to plain.
 	shout_set_tls: ['int32', [shout_tP, 'int32']],
 	shout_get_tls: ['int32', [shout_tP]],
+
+	// This sets the CA directory used by libshout to verify server certificates.
+	// Defaults to system defaults.
+	shout_set_ca_directory: ['int32', [shout_tP, 'CString']],
+	shout_get_ca_directory: ['CString', [shout_tP]],
+
+	// Sets a file with CA certificates used to verify server certificates.
+	// Defaults to system defaults. The file must be in PEM format.
+	// You can use this for self signed server certificates.
+	// In this case you point this to the server certificate in PEM format.
+	// Keep in mind that this will allow self-signed certificates but other
+	// checks such as hostname still needs to verify correctly.
+	shout_set_ca_file: ['int32', [shout_tP, 'CString']],
+	shout_get_ca_file: ['CString', [shout_tP]],
+
+	// This sets the list of currently allowed ciphers in OpenSSL format.
+	// Defaults to a list of ciphers considered secure as of day of release.
+	// Setting this to a insecure list may render encryption and authentication useless.
+	// Any application using this call must expose this list to the user.
+	// If the user can not alter this list your application will harm security badly by
+	// preventing the user to get to a safe value by setting it manually or upgrading
+	// libshout.
+	// **Do not use this call if you don't know what you are doing.
+	shout_set_allowed_ciphers: ['int32', [shout_tP, 'CString']],
+	shout_get_allowed_ciphers: ['CString', [shout_tP]],
+
+	// This sets the client certificate to be used. Defaults to none.
+	// The file must be in PEM format and must contain both the certificate as well as the
+	// private key for that certificate.
+	shout_set_client_certificate: ['int32', [shout_tP, 'CString']],
+	shout_get_client_certificate: ['CString', [shout_tP]],
+
+	/* ----- Directory parameters ----- */
+	/* The following parameters are optional. They are used to control whether
+	 and how your stream will be listed in the server's stream directory (if available). */
+
+	// Setting this to 1 asks the server to list the stream in
+	// any directories it knows about. To suppress listing, set this to 0.
+	// Default is 0.
+	shout_set_public: ['int32', [shout_tP, 'int32']],
+	shout_get_public: ['int32', [shout_tP]],
+
+	// This function sets the meta data for the stream. (name, value)
+	shout_set_meta: ['int32', [shout_tP, 'CString', 'CString']],
+	shout_get_meta: ['CString', [shout_tP, 'CString']],
+
+	// Sets a stream audio parameter (eg bitrate, samplerate, channels or quality).
+	// The currently defined parameters are listed in the Audio Info Constants, but
+	// you are free to add additional fields if your directory server understands them.
+	shout_set_audio_info: ['int32', [shout_tP, 'CString', 'CString']],
+	shout_get_audio_info: ['CString', [shout_tP, 'CString']],
+
+
+	/* ----- Metadata ----- */
+	/* These functions currently only make sense for MP3 streams. Vorbis streams are expected
+	 to embed metadata as vorbis comments in the audio stream. */
+
+	// Allocates a new metadata structure, or returns NULL if no memory is available. The
+	// returned structure should be freed with shout_metadata_free< when you are done with it.
+	shout_metadata_new: [shout_metadataP, []],
+
+	// Frees any resources associated with self.
+	shout_metadata_free: ['void', [shout_metadataP]],
+
+	// Add metadata value [3] to [1], under the key [2]. You'll probably want to set [2]
+	// to "song", though "url" may also be useful.
+	shout_metadata_add: ['int32', [shout_metadataP, 'CString', 'CString']],
+
+	// Sets metadata on the connection [1] to [2].
+	// Only MP3 streams support this type of metadata update. You may use this function
+	// on defined but closed connections (this is useful if you simply want to set the
+	// metadata for a stream provided by another process).
+	shout_set_metadata: ['int32', [shout_tP, shout_metadataP]],
 })
 
 function ptr(type) {
