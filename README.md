@@ -16,7 +16,7 @@ To use libshout-js, you must first install the libshout library. Consult your OS
 
 Install nodeshout with yarn or npm:
 
-    yarn install libshout-js
+    yarn add libshout-js
 
 Use as follows:
 ```js
